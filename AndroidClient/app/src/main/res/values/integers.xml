@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="max_retries">3</integer>
+    <integer name="initial_backoff_ms">500</integer>
+    <integer name="jitter_ms">100</integer>
+</resources>

@@ -32,9 +32,22 @@ object AuthInterceptor : Interceptor {
                 var attempt = 0
                 var success = false
                 var lastException: Exception? = null
-                val maxRetries = DEFAULT_MAX_RETRIES
-                val initialBackoff = DEFAULT_INITIAL_BACKOFF_MS
-                val jitterMs = DEFAULT_JITTER_MS
+                // read config from resources if available
+                var maxRetries = DEFAULT_MAX_RETRIES
+                var initialBackoff = DEFAULT_INITIAL_BACKOFF_MS
+                var jitterMs = DEFAULT_JITTER_MS
+                var retryIdempotentOnly = true
+                try {
+                    val ctx = com.example.aivideoclient.utils.AppContext.appContext
+                    if (ctx != null) {
+                        val res = ctx.resources
+                        maxRetries = res.getInteger(com.example.aivideoclient.R.integer.max_retries)
+                        initialBackoff = res.getInteger(com.example.aivideoclient.R.integer.initial_backoff_ms).toLong()
+                        jitterMs = res.getInteger(com.example.aivideoclient.R.integer.jitter_ms).toLong()
+                        retryIdempotentOnly = res.getBoolean(com.example.aivideoclient.R.bool.retry_idempotent_only)
+                    }
+                } catch (_: Exception) { }
+
                 while (attempt < maxRetries && !success) {
                     try {
                         val newToken = runBlocking { com.example.aivideoclient.utils.TokenRepository.refreshToken(ctx) }
@@ -42,7 +55,15 @@ object AuthInterceptor : Interceptor {
                             val newRequest = original.newBuilder()
                                 .header("Authorization", "Bearer $newToken")
                                 .build()
-                            response = chain.proceed(newRequest)
+                            // Only retry if request is idempotent or config allows non-idempotent
+                            val method = original.method.uppercase()
+                            val isIdempotent = method == "GET" || method == "HEAD" || method == "OPTIONS"
+                            if (!retryIdempotentOnly || isIdempotent) {
+                                response = chain.proceed(newRequest)
+                            } else {
+                                // do not retry non-idempotent requests
+                                break
+                            }
                             success = response.code != 401
                             if (success) break
                         }
