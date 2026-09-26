@@ -13,6 +13,8 @@ import androidx.navigation.compose.navArgument
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.aivideoclient.network.RetrofitClient
 import com.example.aivideoclient.repository.VideoRepository
+import com.example.aivideoclient.utils.AppContext
+import com.example.aivideoclient.utils.TokenRepository
 import com.example.aivideoclient.ui.VideoScreen
 import com.example.aivideoclient.ui.VideoViewModel
 import com.example.aivideoclient.ui.VideoViewModel.Factory
@@ -22,6 +24,10 @@ import com.example.aivideoclient.ui.RegisterScreen
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Initialize application context provider and token repository
+        AppContext.init(applicationContext)
+        TokenRepository.init(applicationContext)
 
         // Create API and repository
         val api = RetrofitClient.create("https://10.0.2.2:5001/") // localhost for emulator; adjust as needed
@@ -49,10 +55,6 @@ class MainActivity : ComponentActivity() {
 
                         composable("onboarding") {
                             com.example.aivideoclient.ui.OnboardingScreen(onGetStarted = {
-                                // mark launched and navigate to login
-                                val ctx = this@MainActivity
-                                val prefs = com.example.aivideoclient.utils.OnboardingPrefs(ctx)
-                                prefs.setLaunched()
                                 navController.navigate("login") {
                                     popUpTo("onboarding") { inclusive = true }
                                 }

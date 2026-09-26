@@ -9,8 +9,10 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.suspendCancellableCoroutine
 import java.io.IOException
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 private val Context.dataStore by preferencesDataStore(name = "aivideo_token")
 
@@ -37,13 +39,27 @@ object TokenRepository {
 
     suspend fun refreshToken(context: Context): String? {
         val user = FirebaseAuth.getInstance().currentUser ?: return null
-        val result = user.getIdToken(true).await()
-        val token = result.token
-        currentToken = token
-        context.dataStore.edit { prefs ->
-            if (token != null) prefs[ID_TOKEN] = token
+        return suspendCancellableCoroutine { cont ->
+            user.getIdToken(true).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val token = task.result?.token
+                    currentToken = token
+                    try {
+                        // persist token
+                        kotlinx.coroutines.GlobalScope.launch {
+                            context.dataStore.edit { prefs ->
+                                if (token != null) prefs[ID_TOKEN] = token
+                            }
+                        }
+                    } catch (_: Exception) {
+                    }
+                    cont.resume(token)
+                } else {
+                    val ex = task.exception ?: Exception("Failed to refresh token")
+                    cont.resumeWithException(ex)
+                }
+            }
         }
-        return token
     }
 
     suspend fun clear(context: Context) {
