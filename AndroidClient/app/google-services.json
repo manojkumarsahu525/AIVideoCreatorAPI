@@ -1,0 +1,16 @@
+{
+  "project_info": {
+    "project_number": "REPLACE_WITH_YOUR_PROJECT_NUMBER",
+    "project_id": "REPLACE_WITH_YOUR_PROJECT_ID",
+    "storage_bucket": "REPLACE_WITH_YOUR_STORAGE_BUCKET"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:REPLACE:android:abcdef",
+        "android_client_info": { "package_name": "com.example.aivideoclient" }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
