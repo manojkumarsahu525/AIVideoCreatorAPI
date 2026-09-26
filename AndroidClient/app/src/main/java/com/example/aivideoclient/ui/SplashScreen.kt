@@ -32,6 +32,7 @@ fun SplashScreen(onComplete: (showOnboarding: Boolean) -> Unit) {
     }
 
     val scaleAnim by animateFloatAsState(targetValue = if (visible) 1f else 0.8f, animationSpec = tween(800))
+    val rotation by animateFloatAsState(targetValue = if (visible) 0f else -15f, animationSpec = tween(800))
 
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -40,7 +41,8 @@ fun SplashScreen(onComplete: (showOnboarding: Boolean) -> Unit) {
             Image(painter = logo, contentDescription = "App Logo", modifier = Modifier
                 .size(120.dp)
                 .alpha(alpha)
-                .scale(scaleAnim))
+                .scale(scaleAnim)
+                .graphicsLayer(rotationZ = rotation))
             Spacer(Modifier.height(12.dp))
             Text("AI Video Creator", fontSize = 28.sp, fontWeight = FontWeight.Bold, modifier = Modifier.alpha(alpha))
             Spacer(Modifier.height(8.dp))

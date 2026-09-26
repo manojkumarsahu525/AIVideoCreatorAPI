@@ -82,8 +82,9 @@ fun RegisterScreen(onRegisterSuccess: () -> Unit, onCancel: () -> Unit) {
                     loading = false
                     if (task.isSuccessful) {
                         Toast.makeText(context, "Registration successful", Toast.LENGTH_SHORT).show()
-                        FirebaseAuth.getInstance().currentUser?.getIdToken(true)?.addOnSuccessListener { result ->
-                            com.example.aivideoclient.utils.TokenStore.idToken = result.token
+                        val ctx = context.applicationContext
+                        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+                            com.example.aivideoclient.utils.TokenRepository.refreshToken(ctx)
                         }
                         onRegisterSuccess()
                     } else {

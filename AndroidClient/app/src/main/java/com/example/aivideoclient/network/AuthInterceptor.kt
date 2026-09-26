@@ -8,7 +8,7 @@ object AuthInterceptor : Interceptor {
         val original = chain.request()
         val builder = original.newBuilder()
 
-        val token = com.example.aivideoclient.utils.TokenStore.idToken
+        val token = com.example.aivideoclient.utils.TokenRepository.currentToken
         if (!token.isNullOrBlank()) {
             builder.header("Authorization", "Bearer $token")
         }
