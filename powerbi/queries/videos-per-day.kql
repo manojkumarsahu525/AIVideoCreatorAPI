@@ -1,0 +1,5 @@
+customEvents
+| where timestamp >= ago(30d)
+| where name == "VideoGenerationCompleted"
+| summarize videos = count() by bin(timestamp, 1d)
+| order by timestamp

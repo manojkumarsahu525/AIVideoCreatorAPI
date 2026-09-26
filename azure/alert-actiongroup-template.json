@@ -1,0 +1,30 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "actionGroupName": { "type": "string" },
+    "resourceGroup": { "type": "string" },
+    "webhookUrl": { "type": "string" }
+  },
+  "resources": [
+    {
+      "type": "microsoft.insights/actionGroups",
+      "apiVersion": "2019-06-01",
+      "name": "[parameters('actionGroupName')]",
+      "location": "Global",
+      "properties": {
+        "groupShortName": "scaleAG",
+        "enabled": true,
+        "emailReceivers": [],
+        "smsReceivers": [],
+        "webhookReceivers": [
+          {
+            "name": "ScaleWebhook",
+            "serviceUri": "[parameters('webhookUrl')]",
+            "useCommonAlertSchema": true
+          }
+        ]
+      }
+    }
+  ]
+}

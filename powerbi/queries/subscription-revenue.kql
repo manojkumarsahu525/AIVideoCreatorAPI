@@ -1,0 +1,5 @@
+customMetrics
+| where timestamp >= ago(90d)
+| where name == "SubscriptionRevenue"
+| summarize revenue = sum(value) by bin(timestamp, 1d)
+| order by timestamp

@@ -1,0 +1,6 @@
+customEvents
+| where timestamp >= ago(30d)
+| where name == "VideoGenerationStarted"
+| extend uid = tostring(customDimensions.uid)
+| summarize dau = dcount(uid) by bin(timestamp, 1d)
+| order by timestamp

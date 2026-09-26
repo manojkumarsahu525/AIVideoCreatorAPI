@@ -1,0 +1,41 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "sqlServerName": { "type": "string" },
+    "sqlAdminUser": { "type": "string" },
+    "sqlAdminPassword": { "type": "securestring" },
+    "databaseName": { "type": "string", "defaultValue": "aivideodb" },
+    "location": { "type": "string", "defaultValue": "eastus" }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Sql/servers",
+      "apiVersion": "2021-02-01-preview",
+      "name": "[parameters('sqlServerName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "administratorLogin": "[parameters('sqlAdminUser')]",
+        "administratorLoginPassword": "[parameters('sqlAdminPassword')]"
+      }
+    },
+    {
+      "type": "Microsoft.Sql/servers/databases",
+      "apiVersion": "2021-02-01-preview",
+      "name": "[format('{0}/{1}', parameters('sqlServerName'), parameters('databaseName'))]",
+      "dependsOn": [
+        "[format('Microsoft.Sql/servers/{0}', parameters('sqlServerName'))]"
+      ],
+      "properties": {
+        "collation": "SQL_Latin1_General_CP1_CI_AS",
+        "maxSizeBytes": "2147483648"
+      }
+    }
+  ],
+  "outputs": {
+    "connectionString": {
+      "type": "string",
+      "value": "Server=tcp:[parameters('sqlServerName')].database.windows.net,1433;Initial Catalog=[parameters('databaseName')];Persist Security Info=False;User ID=[parameters('sqlAdminUser')];Password=[parameters('sqlAdminPassword')];MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+    }
+  }
+}

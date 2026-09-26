@@ -28,22 +28,58 @@ class MainActivity : ComponentActivity() {
         val repo = VideoRepository(api)
 
         setContent {
-            MaterialTheme {
+            AIVideoTheme {
                 Surface(color = MaterialTheme.colors.background) {
                     val navController = rememberNavController()
 
-                    NavHost(navController = navController, startDestination = "login") {
+                    NavHost(navController = navController, startDestination = "splash") {
+                        composable("splash") {
+                            com.example.aivideoclient.ui.SplashScreen { showOnboarding ->
+                                if (showOnboarding) {
+                                    navController.navigate("onboarding") {
+                                        popUpTo("splash") { inclusive = true }
+                                    }
+                                } else {
+                                    navController.navigate("login") {
+                                        popUpTo("splash") { inclusive = true }
+                                    }
+                                }
+                            }
+                        }
+
+                        composable("onboarding") {
+                            com.example.aivideoclient.ui.OnboardingScreen(onGetStarted = {
+                                // mark launched and navigate to login
+                                val ctx = this@MainActivity
+                                val prefs = com.example.aivideoclient.utils.OnboardingPrefs(ctx)
+                                prefs.setLaunched()
+                                navController.navigate("login") {
+                                    popUpTo("onboarding") { inclusive = true }
+                                }
+                            })
+                        }
+
                         composable("login") {
                             LoginScreen(onLoginSuccess = { navController.navigate("video") }, onRegister = { navController.navigate("register") })
                         }
+
                         composable("register") {
                             RegisterScreen(onRegisterSuccess = { navController.navigate("video") }, onCancel = { navController.popBackStack() })
                         }
+
                         composable("video") {
                             val vm: VideoViewModel = viewModel(factory = Factory(repo))
                             VideoScreen(viewModel = vm, onLogout = { navController.navigate("login") {
                                 popUpTo("login") { inclusive = true }
-                            } })
+                            } }, onAnalytics = { navController.navigate("analytics") })
+                        }
+
+                        composable("analytics") {
+                            // Create Analytics API and repository
+                            val analyticsApi = RetrofitClient.createService("https://10.0.2.2:5001/", com.example.aivideoclient.network.AnalyticsApi::class.java)
+                            val analyticsRepo = com.example.aivideoclient.repository.AnalyticsRepository(analyticsApi)
+                            val vm: com.example.aivideoclient.ui.AnalyticsViewModel = viewModel(factory = com.example.aivideoclient.ui.AnalyticsViewModel.Factory(analyticsRepo))
+                            com.example.aivideoclient.ui.AnalyticsScreen(viewModel = vm, onBack = { navController.popBackStack() })
                         }
                     }
                 }

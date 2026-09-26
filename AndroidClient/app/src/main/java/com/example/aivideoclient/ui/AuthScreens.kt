@@ -36,6 +36,10 @@ fun LoginScreen(onLoginSuccess: () -> Unit, onRegister: () -> Unit) {
                     loading = false
                     if (task.isSuccessful) {
                         Toast.makeText(context, "Login successful", Toast.LENGTH_SHORT).show()
+                        // fetch ID token and store for API calls
+                        FirebaseAuth.getInstance().currentUser?.getIdToken(true)?.addOnSuccessListener { result ->
+                            com.example.aivideoclient.utils.TokenStore.idToken = result.token
+                        }
                         onLoginSuccess()
                     } else {
                         Toast.makeText(context, "Login failed: ${task.exception?.message}", Toast.LENGTH_LONG).show()
@@ -78,6 +82,9 @@ fun RegisterScreen(onRegisterSuccess: () -> Unit, onCancel: () -> Unit) {
                     loading = false
                     if (task.isSuccessful) {
                         Toast.makeText(context, "Registration successful", Toast.LENGTH_SHORT).show()
+                        FirebaseAuth.getInstance().currentUser?.getIdToken(true)?.addOnSuccessListener { result ->
+                            com.example.aivideoclient.utils.TokenStore.idToken = result.token
+                        }
                         onRegisterSuccess()
                     } else {
                         Toast.makeText(context, "Registration failed: ${task.exception?.message}", Toast.LENGTH_LONG).show()

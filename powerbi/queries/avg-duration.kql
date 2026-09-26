@@ -1,0 +1,5 @@
+customMetrics
+| where timestamp >= ago(30d)
+| where name == "VideoGenerationDurationMs"
+| summarize avgDurationMs = avg(value) by bin(timestamp, 1d)
+| order by timestamp

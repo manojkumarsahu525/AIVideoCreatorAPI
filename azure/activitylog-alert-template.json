@@ -1,0 +1,38 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "alertName": { "type": "string" },
+    "scopeResourceId": { "type": "string" },
+    "actionGroupId": { "type": "string" }
+  },
+  "resources": [
+    {
+      "type": "microsoft.insights/activityLogAlerts",
+      "apiVersion": "2017-04-01",
+      "name": "[parameters('alertName')]",
+      "location": "global",
+      "properties": {
+        "scopes": [
+          "[parameters('scopeResourceId')]"
+        ],
+        "enabled": true,
+        "condition": {
+          "allOf": [
+            {
+              "field": "category",
+              "equals": "Autoscale"
+            }
+          ]
+        },
+        "actions": {
+          "actionGroups": [
+            {
+              "actionGroupId": "[parameters('actionGroupId')]"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
