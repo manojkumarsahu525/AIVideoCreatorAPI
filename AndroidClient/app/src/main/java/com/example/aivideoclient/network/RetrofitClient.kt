@@ -22,5 +22,5 @@ object RetrofitClient {
         return retrofit.create(serviceClass)
     }
 
-    fun create(baseUrl: String): VideoApi = createService(baseUrl, VideoApi::class.java)
+    fun create(baseUrl: String = com.example.aivideoclient.BuildConfig.API_BASE_URL): VideoApi = createService(baseUrl, VideoApi::class.java)
 }
