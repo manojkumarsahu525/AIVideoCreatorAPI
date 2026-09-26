@@ -5,6 +5,11 @@ import okhttp3.Response
 
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.delay
+import kotlin.random.Random
+
+private const val DEFAULT_MAX_RETRIES = 3
+private const val DEFAULT_INITIAL_BACKOFF_MS = 500L
+private const val DEFAULT_JITTER_MS = 100L
 
 object AuthInterceptor : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
@@ -27,7 +32,10 @@ object AuthInterceptor : Interceptor {
                 var attempt = 0
                 var success = false
                 var lastException: Exception? = null
-                while (attempt < 3 && !success) {
+                val maxRetries = DEFAULT_MAX_RETRIES
+                val initialBackoff = DEFAULT_INITIAL_BACKOFF_MS
+                val jitterMs = DEFAULT_JITTER_MS
+                while (attempt < maxRetries && !success) {
                     try {
                         val newToken = runBlocking { com.example.aivideoclient.utils.TokenRepository.refreshToken(ctx) }
                         if (!newToken.isNullOrBlank()) {
@@ -43,10 +51,12 @@ object AuthInterceptor : Interceptor {
                     }
 
                     attempt++
-                    // exponential backoff: 500ms, 1000ms, 2000ms
-                    val backoff = 500L * (1 shl (attempt - 1).coerceAtLeast(0))
+                    // exponential backoff with jitter
+                    val backoff = initialBackoff * (1 shl (attempt - 1).coerceAtLeast(0))
+                    val jitter = Random.nextLong(0, jitterMs + 1)
+                    val sleepMs = backoff + jitter
                     try {
-                        runBlocking { delay(backoff) }
+                        runBlocking { delay(sleepMs) }
                     } catch (_: Exception) { }
                 }
 
